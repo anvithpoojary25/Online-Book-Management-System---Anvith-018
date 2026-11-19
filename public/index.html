@@ -1,1 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Manager · Express + Fetch</title>
+  <style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 
+  body {
+    font-family: Arial, sans-serif;
+    background: #e8f1f8;
+    padding: 20px;
+    color: #1a2e3f;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: #ffffff;
+    border: 1px solid #b8d4e8;
+    padding: 20px;
+    border-radius: 8px;
+  }
+
+  h1 {
+    font-size: 22px;
+    margin-bottom: 6px;
+    color: #1a3a52;
+  }
+
+  h1 span {
+    font-size: 12px;
+    background: #2c6e9e;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 6px;
+    margin-left: 8px;
+  }
+
+  .subhead {
+    font-size: 13px;
+    color: #4a6b82;
+    margin-bottom: 20px;
+    padding: 8px;
+    background: #eef5fb;
+    border-left: 3px solid #5a9fd4;
+  }
+
+  .subhead code {
+    background: #d6e8f5;
+    padding: 1px 4px;
+    font-size: 12px;
+    color: #1a3a52;
+    border-radius: 3px;
+  }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .add-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .add-section input {
+    padding: 6px 10px;
+    border: 1px solid #a8c8e0;
+    border-radius: 6px;
+    font-size: 13px;
+    width: 130px;
+    background: #f8fbfe;
+  }
+
+  .add-section input:focus {
+    outline: none;
+    border-color: #3d7fb0;
+    background: white;
+  }
+
+  .btn {
+    border: 1px solid #7aa8cc;
+    background: #ffffff;
+    color: #1a4a6b;
+    padding: 6px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+
+  .btn:hover {
+    background: #e3eef8;
+  }
+
+  .btn-primary {
+    background: #2c6e9e;
+    color: white;
+    border-color: #2c6e9e;
+  }
+
+  .btn-primary:hover {
+    background: #1f557d;
+  }
+
+  .btn-danger {
+    background: #c0392b;
+    color: white;
+    border-color: #c0392b;
+  }
+
+  .btn-danger:hover {
+    background: #922b21;
+  }
+
+  .btn-sm {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin-top: 10px;
+  }
+
+  th {
+    background: #dbeaf6;
+    color: #1a3a52;
+    text-align: left;
+    padding: 8px;
+    border: 1px solid #b8d4e8;
+    font-size: 13px;
+  }
+
+  td {
+    padding: 8px;
+    border: 1px solid #d4e4f0;
+    color: #1a2e3f;
+  }
+
+  tbody tr:nth-child(even) {
+    background: #f4f9fd;
+  }
+
+  tbody tr:hover {
+    background: #eaf3fb;
+  }
+
+  .book-id-badge {
+    font-family: monospace;
+    background: #dbeaf6;
+    padding: 2px 6px;
+    font-size: 12px;
+    color: #1a4a6b;
+    border-radius: 4px;
+  }
+
+  .price {
+    font-weight: bold;
+    color: #2c6e9e;
+  }
+
+  .actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .message-box {
+    margin-top: 15px;
+    padding: 10px;
+    font-size: 13px;
+    background: #eef5fb;
+    border-left: 4px solid #5a9fd4;
+    color: #1a3a52;
+    border-radius: 4px;
+  }
+
+  .message-box.error {
+    background: #fdecea;
+    border-left-color: #c0392b;
+    color: #a33;
+  }
+
+  .message-box.success {
+    background: #eaf7ee;
+    border-left-color: #27ae60;
+    color: #1e6b3f;
+  }
+
+  .empty-row td {
+    text-align: center;
+    padding: 20px;
+    color: #7a9ab0;
+    font-style: italic;
+  }
+
+  .footer-note {
+    margin-top: 20px;
+    font-size: 12px;
+    color: #7a9ab0;
+    text-align: center;
+    border-top: 1px solid #d4e4f0;
+    padding-top: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>
+    Book Manager
+  </h1>
+  <div class="toolbar">
+    <div class="add-section">
+      <input type="text" id="newId" placeholder="ID" />
+      <input type="text" id="newTitle" placeholder="Title" />
+      <input type="text" id="newAuthor" placeholder="Author" />
+      <input type="number" id="newPrice" placeholder="Price" step="0.01" min="0" />
+      <button class="btn btn-primary" id="addBookBtn"> Add Book</button>
+    </div>
+    <button class="btn btn-outline" id="refreshBtn">Refresh</button>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Book ID</th>
+          <th>Title</th>
+          <th>Author</th>
+          <th>Price</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="booksTableBody">
+        <tr><td colspan="5" class="empty-row">Loading books…</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div id="messageBox" class="message-box">
+    <span></span>
+    <span id="messageText">Ready — fetch books from server</span>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const API_BASE = 'http://localhost:3000';
+    const BOOKS_ENDPOINT = `${API_BASE}/books`;
+    const tbody = document.getElementById('booksTableBody');
+    const messageBox = document.getElementById('messageBox');
+    const messageText = document.getElementById('messageText');
+    const newTitle = document.getElementById('newTitle');
+    const newAuthor = document.getElementById('newAuthor');
+    const newPrice = document.getElementById('newPrice');
+    const addBtn = document.getElementById('addBookBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    function setMessage(text, type = 'info') {
+      messageBox.className = 'message-box';
+      if (type === 'error') messageBox.classList.add('error');
+      if (type === 'success') messageBox.classList.add('success');
+      const icon = type === 'error' ? '❌' : (type === 'success' ? '' : '💡');
+      messageBox.innerHTML = `<span>${icon}</span><span id="messageText">${text}</span>`;
+    }
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+    async function fetchAllBooks() {
+      tbody.innerHTML = `<tr><td colspan="5" class="empty-row"><span class="loading"></span> Loading…</td></tr>`;
+      try {
+        const response = await fetch(BOOKS_ENDPOINT);
+        if (!response.ok) {
+          const err = await response.text();
+          throw new Error(`Server responded ${response.status}: ${err || 'Failed to fetch'}`);
+        }
+        const books = await response.json();
+        renderBooksTable(books);
+        setMessage(`Loaded ${books.length} book(s)`, 'success');
+      } catch (error) {
+        console.error('Fetch error:', error);
+        tbody.innerHTML = `<tr><td colspan="5" class="empty-row"> Could not load books. Is the server running?</td></tr>`;
+        setMessage(`Error fetching books: ${error.message}`, 'error');
+      }
+    }
+    function renderBooksTable(books) {
+      if (!books || books.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="empty-row"> No books yet. Add your first book!</td></tr>`;
+        return;
+      }
+
+      let html = '';
+      books.forEach(book => {
+        const id = book.bookID ?? book.id ?? '?';
+        const title = book.title ?? '(untitled)';
+        const author = book.author ?? '(unknown)';
+        const price = book.price !== undefined && book.price !== null ? Number(book.price).toFixed(2) : '—';
+
+        html += `
+          <tr data-id="${escapeHtml(id)}">
+            <td><span class="book-id-badge">${escapeHtml(id)}</span></td>
+            <td>${escapeHtml(title)}</td>
+            <td>${escapeHtml(author)}</td>
+            <td class="price">Rs.${escapeHtml(price)}</td>
+            <td class="actions">
+              <button class="btn btn-outline btn-sm edit-btn" data-id="${escapeHtml(id)}" data-title="${escapeHtml(title)}" data-author="${escapeHtml(author)}" data-price="${escapeHtml(book.price ?? '')}">Edit</button>
+              <button class="btn btn-danger btn-sm delete-btn" data-id="${escapeHtml(id)}"> Delete</button>
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+
+      document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', handleEditClick);
+      });
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', handleDeleteClick);
+      });
+    }
+
+    async function addBook() {
+      const bookID = newId.value.trim();
+      const title = newTitle.value.trim();
+      const author = newAuthor.value.trim();
+      const priceRaw = newPrice.value.trim();
+
+      if (!title || !author || !priceRaw) {
+        setMessage('All fields are required: title, author, price', 'error');
+        return;
+      }
+      const price = parseFloat(priceRaw);
+      if (isNaN(price) || price < 0) {
+        setMessage('Price must be a valid non-negative number', 'error');
+        return;
+      }
+
+      const newBook = { bookID, title, author, price };
+
+      try {
+        const response = await fetch(BOOKS_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newBook)
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || `POST failed with status ${response.status}`);
+        }
+
+
+        newTitle.value = '';
+        newAuthor.value = '';
+        newPrice.value = '';
+
+        setMessage(`Book "${title}" added successfully`, 'success');
+        await fetchAllBooks();  // refresh table
+      } catch (error) {
+        console.error('Add error:', error);
+        setMessage(`Could not add book: ${error.message}`, 'error');
+      }
+    }
+
+    async function handleEditClick(e) {
+      const btn = e.currentTarget;
+      const id = btn.dataset.id;
+      const oldTitle = btn.dataset.title;
+      const oldAuthor = btn.dataset.author;
+      const oldPrice = btn.dataset.price;
+
+      const newTitleVal = prompt('Edit title:', oldTitle);
+      if (newTitleVal === null) return;  
+      const newAuthorVal = prompt('Edit author:', oldAuthor);
+      if (newAuthorVal === null) return;
+      const newPriceVal = prompt('Edit price:', oldPrice);
+      if (newPriceVal === null) return;
+
+      const priceNum = parseFloat(newPriceVal);
+      if (!newTitleVal.trim() || !newAuthorVal.trim() || isNaN(priceNum) || priceNum < 0) {
+        setMessage('Invalid input: title, author, and price (≥0) required', 'error');
+        return;
+      }
+
+      const updatedBook = {
+        bookID: id,          
+        title: newTitleVal.trim(),
+        author: newAuthorVal.trim(),
+        price: priceNum
+      };
+
+      try {
+        const response = await fetch(`${BOOKS_ENDPOINT}/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedBook)
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || `PUT failed with status ${response.status}`);
+        }
+
+        setMessage(`Book ID ${id} updated`, 'success');
+        await fetchAllBooks();
+      } catch (error) {
+        console.error('Update error:', error);
+        setMessage(`Update failed: ${error.message}`, 'error');
+      }
+    }
+
+    async function handleDeleteClick(e) {
+      const btn = e.currentTarget;
+      const id = btn.dataset.id;
+      if (!confirm(`Delete book with ID ${id}?`)) return;
+
+      try {
+        const response = await fetch(`${BOOKS_ENDPOINT}/${id}`, {
+          method: 'DELETE'
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || `DELETE failed with status ${response.status}`);
+        }
+
+        setMessage(`Book ID ${id} deleted`, 'success');
+        await fetchAllBooks();
+      } catch (error) {
+        console.error('Delete error:', error);
+        setMessage(`Delete failed: ${error.message}`, 'error');
+      }
+    }
+
+    addBtn.addEventListener('click', addBook);
+    refreshBtn.addEventListener('click', fetchAllBooks);
+    fetchAllBooks();
+  })();
+</script>
+</body>
+</html>
